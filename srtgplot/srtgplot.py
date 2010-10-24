@@ -1,11 +1,12 @@
 #!/usr/bin/python
-# Simple realtime plotter using gnuplot
+# Simple real-time plotter using gnuplot
 #  
 # Usage: 
-# ./simplertplot.py --conf <config_file_name> [--nrt <plotfile>] 
-#                   [--logdir <dir>]  
+# ./srtgplot.py <conf_file>
 #
-# Copyright (c) Arun Viswanathan
+# Copyright (C) 2010 Arun Viswanathan (arunv@arunviswanathan.com)
+#This software is licensed under the GPLv3 license, included in
+#./GPLv3-LICENSE.txt in the source distribution
 #-------------------------------------------------------------------------------
 
 import sys
