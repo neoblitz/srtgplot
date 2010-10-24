@@ -1,0 +1,7 @@
+srtgplot v0.1
+=============
+
+Usage: 
+    ./srtgplot.py <conf_filename>
+
+Sample conf file is simpleplot.ini.
