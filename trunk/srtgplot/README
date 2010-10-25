@@ -4,4 +4,81 @@ srtgplot v0.1
 Usage: 
     ./srtgplot.py <conf_filename>
 
-Sample conf file is simpleplot.ini.
+Sample configuration file is simpleplot.ini.
+
+Format of configuration file:
+-----------------------------
+The configuration consists of sections, where each section defines
+a separate plot. Plot parameters are defined using a set of keywords.
+The file format is as follows:
+ [ section-name ]
+    key1 = value1
+    key2 = value2
+    ...
+    ...
+ Section names could be anything and the list of keywords is defined below.
+ The keyword 'command' is mandatory and everything else has a default value.
+ 
+Keywords Available
+------------------
+ command (mandatory)
+   Any command that outputs a single line in the following format
+   <time> <value>
+   where
+       time  : time in the format specified using the 'format' keyword 
+               IMPORTANT: time cannot contain spaces.          
+       value : real-valued or numerical value of the plotted variable   
+           
+ title (default: "Real-time plot")
+   The title of the plot
+
+ miny (default: 0)
+   Minimum y-value
+ 
+ maxy (default: * (suitable maximum))
+   Maximum y-value
+ 
+ frequency (default: 1)
+   Frequency of updating output in seconds.
+ 
+ showplot (default: 1)
+   If showplot = 1, a gnuplot display is launched showing the realtime plot
+   If showplot = 0, the gnuplot display is disabled but the values are
+   still logged into the log file.
+
+ plotwindow (default: 100 seconds)
+   Specifies the width of the time window (in seconds) over which the 
+   values are shown
+
+ timeformat (default: %H:%M:%S)
+   The format of time output by the command
+   The following formatting options are available (same as gnuplot except %E)
+       %a  abbreviated name of day of the week
+       %A  full name of day of the week
+       %b or %h    abbreviated name of the month
+       %B  full name of the month
+       %d  day of the month, 01–31
+       %k  hour, 0–23 (one or two digits)
+       %H  hour, 00–23 (always two digits)
+       %l  hour, 1–12 (one or two digits)
+       %I  hour, 01–12 (always two digits)
+       %j  day of the year, 1–366
+       %m  month, 01–12
+       %M  minute, 0–60
+       %p  "am" or "pm"
+       %S  second, 0–60
+       %U  week of the year (week starts on Sunday)
+       %w  day of the week, 0–6 (Sunday = 0)
+       %W  week of the year (week starts on Monday)
+       %y  year, 0-99
+       %Y  year, 4-digit
+       %E  Unix Epoch
+ 
+ processdata (default: 'raw')
+    Allows different types of processing to be applied to the data before plotting.
+    Currently available options are 'raw' and 'reld'.
+    
+    raw : Plots data without any processing
+    reld : Plots the relative difference of values  
+     
+
