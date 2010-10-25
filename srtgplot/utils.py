@@ -1,7 +1,19 @@
+# utils.py 
+#      Utility functions
+#
+# Copyright (C) 2010 Arun Viswanathan (arunv@arunviswanathan.com)
+#This software is licensed under the GPLv3 license, included in
+#./GPLv3-LICENSE.txt in the source distribution
+#-------------------------------------------------------------------------------
 
+import commands
+import os, sys
 
 def which(program):
-    import os
+    '''
+        Checks if the specified 'program' exists in the PATH
+        and is executable. Returns the path or None.
+    '''
     def is_exe(fpath):
         return os.path.exists(fpath) and os.access(fpath, os.X_OK)
 
@@ -16,3 +28,13 @@ def which(program):
                 return exe_file
 
     return None
+
+def execute_command(cmd):
+    '''
+        Executes a shell command and returns status and output returned after
+        execution
+    '''
+    (status, output) = commands.getstatusoutput("""%s""" % (cmd))
+    if (status > 0):
+        return (status, output)
+    return (0, output.split("\n"))
