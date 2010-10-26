@@ -18,6 +18,8 @@ from threading import Thread
 from plotthread import Plot
 from plotconfig import PlotConfig
 
+VERSION = "0.1"
+DEFAULT_LOGDIR = "/tmp"
 threadlist = []
 
 def handler(signum, frame):
@@ -30,9 +32,22 @@ def handler(signum, frame):
         if(t.isAlive()):
             t.set_ttl()
 
+def copyright():
+    print "srtgplot v%s" % (VERSION)
+    print "Copyright (C) 2010 Arun Viswanathan"
+
 def usage():
-    print "Usage: %s --conf <config_file> [--help] [--logdir <logdirectory>]"\
+    copyright()
+    print "\nUsage: ./%s --conf <config_file> [--help] [--logdir <logdirectory>]"\
                  % sys.argv[0]
+    print """
+        where
+        config_file   : Configuration file in the format explained below.
+        log_directory : Directory where captured data is stored. Files under
+                        this directory will be of the format 
+                        rtplot_<section_name_from_conf_file>_<randomstring>      
+    """
+    print "Use Ctrl-C to exit...."
 
 
 def main():
@@ -48,7 +63,7 @@ def main():
 
     conf = None
     help = None
-    logdir = None
+    logdir = DEFAULT_LOGDIR
     # Process options
     for option, arg in opts:
         if option == '--conf':
@@ -62,6 +77,11 @@ def main():
     if not conf:
         usage()
         sys.exit()
+
+    copyright()
+    print "\nConfiguration File : %s" % (conf)
+    print "Log Directory      : %s" % (logdir)
+    print "\nUse Ctrl-C to exit...."
 
     if(not os.path.exists(conf)):
         print  "Error: Filename '", conf, "' does not exist ! Aborting !!"
@@ -78,7 +98,7 @@ def main():
     # Spawn a thread for each section in the INI file
     sections = config.get_sections()
     for secname in sections:
-        tp = Plot(config, secname)
+        tp = Plot(config, secname, logdir)
         threadlist.append(tp)
 
     for tp in threadlist:

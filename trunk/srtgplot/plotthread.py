@@ -31,7 +31,7 @@ set yrange [%s:%s];
 set autoscale x;
 set title \"%s\" font "Sans Serif,14"; """
 
-    def __init__(self, config, secname):
+    def __init__(self, config, secname, logdir):
         Thread.__init__(self)
         self.secname = secname
         self.windowstart = 0
@@ -39,11 +39,13 @@ set title \"%s\" font "Sans Serif,14"; """
         self.config = config
         self.time_to_leave = False
         self.off_filehandle = None
+        self.logdir = logdir
 
         # Initialize attributes for the given secname
         self.config.init_attributes(secname)
 
         if not self.config.is_enabled():
+            print "Skipping plot '%s'" % (secname)
             return
 
         # data is a dynamic buffer that holds data points over the specified 
@@ -54,7 +56,7 @@ set title \"%s\" font "Sans Serif,14"; """
         # Create a temporary file for logging the command output
         (self.handle, self.fnameout) = \
          tempfile.mkstemp(prefix="rtplot_" + self.secname + "_",
-                          dir=self.config.get_logdir());
+                          dir=self.logdir);
 
         if(self.config.get_showplot()):
             self.gp = Gnuplot()
@@ -62,7 +64,12 @@ set title \"%s\" font "Sans Serif,14"; """
                            self.config.get_miny(),
                            self.config.get_maxy(),
                            self.config.get_title()));
-        print "Plotting initialized for '%s' (logfile: '%s', frequency: %d)" % \
+
+        if(self.config.get_offline()):
+           print "Offline plotting initialized for '%s' (logfile: '%s', frequency: %d)" % \
+            (self.secname, self.config.get_offline(), self.config.get_frequency())
+        else:
+            print "Realtime plotting initialized for '%s' (logfile: '%s', frequency: %d)" % \
             (self.secname, self.fnameout, self.config.get_frequency())
         self.start()
 
@@ -113,7 +120,8 @@ set title \"%s\" font "Sans Serif,14"; """
             cmd = self.config.get_command()
             (status, data) = utils.execute_command(cmd)
             if(status):
-                raise Exception("Error while executing %s\n" % (cmd))
+                raise Exception("Error while executing %s\n Error output %s" % \
+                                 (cmd, data))
             else:
                 return data, len(data)
 
@@ -124,7 +132,6 @@ set title \"%s\" font "Sans Serif,14"; """
 
 
     def run(self):
-        print "Processing %s" % (self.secname)
         cmd = self.config.get_command()
         if not cmd:
             print "'command' option for section %s is empty !" % (cmd)
