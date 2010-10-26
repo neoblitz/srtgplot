@@ -2,7 +2,7 @@
 # Simple real-time plotter using gnuplot
 #  
 # Usage: 
-# ./srtgplot.py <conf_file>
+# ./srtgplot.py --conf <conf_file>
 #
 # Copyright (C) 2010 Arun Viswanathan (arunv@arunviswanathan.com)
 #This software is licensed under the GPLv3 license, included in
