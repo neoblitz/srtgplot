@@ -1,13 +1,32 @@
 srtgplot v0.1
 =============
+Copyright(c) 2010 Arun Viswanathan 
 
-Usage: 
-    ./srtgplot.py <conf_filename>
+srtgplot is a simple tool to plot real-time timestamped data using gnuplot. 
+The real-time data can be generated using any command, program or script. 
+Data is expected to be either numeric or continuous and the graph 
+plotted is a simple timeline. Various configuration options are available and 
+are specified using a simple configuration file in the format explained below.
+Example configurations are available under the configs/ directory.
 
-Sample configuration file is simpleplot.ini.
+Usage
+=====
+    ./srtgplot.py --conf <config_file> [--help] [--logdir <logdirectory>]
+    where
+        config_file   : Configuration file in the format explained below.
+        log_directory : Directory where captured data is stored. Files under
+                        this directory will be of the format 
+                        rtplot_<section_name_from_conf_file>_<randomstring>                              
+
+Dependencies
+============
+    Depends on the dateutil package available from http://labix.org/python-dateutil
+    Under Ubuntu, this can be easily installed using
+        sudo apt-get install python-dateutil
+    
 
 Format of configuration file:
------------------------------
+=============================
 The configuration consists of sections, where each section defines
 a separate plot. Plot parameters are defined using a set of keywords.
 The file format is as follows:
@@ -80,5 +99,13 @@ Keywords Available
     
     raw : Plots data without any processing
     reld : Plots the relative difference of values  
-     
+   
+ enabled (default: 1)
+    Enables or disables a section in a configuration file. 
+    
+ offline (default: None)
+    Offline allows replotting from captured data. The argument to offline is 
+    treated as the filename to plot from.
+   
+ 
 

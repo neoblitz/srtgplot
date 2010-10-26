@@ -38,10 +38,13 @@ set title \"%s\" font "Sans Serif,14"; """
         self.windowend = 0
         self.config = config
         self.time_to_leave = False
-        self.offline = True
+        self.off_filehandle = None
 
         # Initialize attributes for the given secname
         self.config.init_attributes(secname)
+
+        if not self.config.is_enabled():
+            return
 
         # data is a dynamic buffer that holds data points over the specified 
         # plotwindow. A deque() is favoured over a [] because deques have O(1)
@@ -74,7 +77,7 @@ set title \"%s\" font "Sans Serif,14"; """
         return(self.windowend - self.windowstart)
 
     def adjust_plotwindow(self, dp):
-        if(not self.offline):
+        if(not self.config.get_offline()):
             timediff = self.get_curr_timewindow(dp)
             if(timediff >= self.config.get_plotwindow()):
                 self.data.popleft()
@@ -97,10 +100,14 @@ set title \"%s\" font "Sans Serif,14"; """
         self.time_to_leave = True
 
     def get_data(self):
-        if(self.offline):
-            filename = "/tmp/rtplot_rxpackets_relative_cvhE3e"
-            fp = open(filename, "r")
-            return fp.readlines()
+        '''
+            Return the data to be plotted 
+        '''
+        filename = self.config.get_offline()
+        if(filename):
+            if(self.off_filehandle == None):
+                self.off_filehandle = open(filename, "r")
+            return self.off_filehandle.xreadlines()
         else:
             # Execute the command
             cmd = self.config.get_command()
@@ -108,10 +115,10 @@ set title \"%s\" font "Sans Serif,14"; """
             if(status):
                 raise Exception("Error while executing %s\n" % (cmd))
             else:
-                return data
+                return data, len(data)
 
     def log_data(self, data):
-        if(not self.offline):
+        if(not self.config.get_offline()):
             for d in data:
                 os.write(self.handle, d + "\n")
 
@@ -133,6 +140,8 @@ set title \"%s\" font "Sans Serif,14"; """
             else:
                 # Get data
                 data = self.get_data()
+                if(not data):
+                    break
 
                 # Log output to the file
                 self.log_data(data)
@@ -146,7 +155,7 @@ set title \"%s\" font "Sans Serif,14"; """
                         self.gp.simple_plot(self.data, 1, 2, "lines")
 
                 # Sleep for the remaining time
-                if(not self.offline):
+                if(not self.config.get_offline()):
                     loopruntime = time.clock() - loopstart
                     if(freq - loopruntime > 0):
                         time.sleep(freq - loopruntime)

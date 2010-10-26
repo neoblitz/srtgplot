@@ -19,6 +19,8 @@ class PlotConfig:
     DEFAULT_PLOTWINDOW = 100
     DEFAULT_LOGDIR = "/tmp"
     DEFAULT_PROCESSDATA = 'raw'
+    DEFAULT_OFFLINE = None
+    DEFAULT_ENABLED = 1
 
     def __init__(self, filename):
         # Read the configuration file
@@ -49,6 +51,8 @@ class PlotConfig:
         self.command = kvhash.get("command", '')
         self.logdir = logdir or self.DEFAULT_LOGDIR
         self.processdata = kvhash.get("processdata", self.DEFAULT_PROCESSDATA)
+        self.offline = kvhash.get("offline", self.DEFAULT_OFFLINE)
+        self.enabled = int(kvhash.get("enabled", self.DEFAULT_ENABLED))
 
     def get_frequency(self):
         return self.freq
@@ -80,4 +84,11 @@ class PlotConfig:
     def get_processdata(self):
         return self.processdata
 
+    def get_offline(self):
+        return self.offline
+
+    def is_enabled(self):
+        if self.enabled:
+            return True
+        return False
 
