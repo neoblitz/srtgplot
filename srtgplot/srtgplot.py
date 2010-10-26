@@ -30,6 +30,11 @@ def handler(signum, frame):
         if(t.isAlive()):
             t.set_ttl()
 
+def usage():
+    print "Usage: %s --conf <config_file> [--help] [--logdir <logdirectory>]"\
+                 % sys.argv[0]
+
+
 def main():
     fn = ''
     # Parse command line options
@@ -49,13 +54,13 @@ def main():
         if option == '--conf':
           conf = arg
         elif option == '--help':
-          help = True
+          usage()
+          sys.exit(0)
         elif option == '--logdir':
           logdir = arg
 
     if not conf:
-        print "Usage: %s --conf <config_file> [--help] [--logdir <logdirectory>]"\
-                     % sys.argv[0]
+        usage()
         sys.exit()
 
     if(not os.path.exists(conf)):
