@@ -1,0 +1,12 @@
+TODOS
+-----
+1. Unit test framework
+2. Implement support for Unix timestamp.
+3. Support for specifying gnuplot options like styles and colors in config.
+4. Support for creating histograms
+5. More data processors  
+
+
+Basic Tests
+===========
+1. 

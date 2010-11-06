@@ -1,0 +1,186 @@
+
+*srtgplot v0.1*
+_Copyright (C) 2010 Arun Viswanathan (arun.pict@gmail.com)_
+
+<wiki:comment> 
+This README is a cutpaste from the google wiki page and is converted to README.html using the wiki_converter script.
+./wiki_convertor.rb srtgplot/README rtgplot/
+</wiki:comment>
+
+= What is srtgplot? =
+srtgplot was written to automate the commonly encountered need of plotting data captured by executing unix commands in real-time (eg: _TX packets_ from *ifconfig* or monitoring the _temperature_ of a hard-drive using output from *smartctl*).The real-time data can be generated using any command, program or script. Data is expected to be either numeric or continuous and the graph plotted is a moving timeline. The specified command is run at the specified frequency, the generated data is collected and plotted using gnuplot in realtime. Also, earlier captured data can be easily plotted in an offline fashion using 
+the 'offline' keyword along with the filename of captured data in the configuration file.
+
+Various configuration options are available and are specified using a simple configuration file in the format explained later. Example configurations are available under the configs/ directory. 
+
+The tool provides the following important features:
+ * Allows plotting data in realtime as well as plotting captured data using the 'offline' keyword.
+ * Allows specifying various time formats using the specifiers supported by gnuplot.
+ * The collected data can be processed using processors before plotting. Currently, supported processors are _reld_ (for plotting relative differences) and _raw_ for plotting the raw data.
+ 
+*Note* For commands that need superuser privileges, it is recommended to run the whole tool using *sudo* instead of specifying sudo with the commands.
+----
+= Dependencies =
+
+ * [http://www.gnuplot.info/ gnuplot]
+ * python v2.6 (may work with earlier versions but is not tested)
+ * [http://labix.org/python-dateutil python-dateutil]
+ 
+ Under Ubuntu, dateutils can be installed using
+{{{
+ sudo apt-get install python-dateutil
+}}}
+----
+= Usage =
+{{{
+./srtgplot.py --conf <config_file> [--logdir <dir>] [--list] [--help]
+where
+	--conf <config_file> : Configuration file. See README for format.
+	[--logdir <dir>] : Directory where captured data is stored unless
+			overridden using the 'logdir' directive in the config.
+			By default, log files created will be of the format
+			rtplot_<section_name_from_conf_file>_<randomstring>)
+			unless overridden using the 'logfile' directive
+	[--list]        : Lists all available configuration directives.
+	[--help]        : Print this help.
+}}}
+
+----
+= Example = 
+== Writing the configuration ==
+The following is a simple configuration for plotting packets/sec on an interface. 
+{{{
+# Plots the packets / second received on an interface
+# This is achieved by setting processdata to 'rel'
+[rxpackets_relative]
+# Running the command should produce output in the form 
+# time_in_timeformat value
+command = ifconfig eth1 | grep "RX packets" |  sed -e 's/ \+/ /g' -e 's/ /:/g' | cut -d ':' -f 4 | xargs echo `date +%T`
+# Format of time output by the command above 
+timeformat = %H:%M:%S
+# Frequency with which to execute the command
+frequency = 1
+# Title for the produced graphs 
+title = RX Packets/sec on interface eth1
+# Show the plot output. If this is zero then data is only logged to the logfile
+showplot = 1
+# Minimum and maximum values for the Y-axis. '*' means automatically adjust the
+# value. 
+miny = 0
+maxy = *
+# The plot shows a moving graph with window of plotwindow. 
+plotwindow = 1000
+# processdata causes the data to be preprocessed before plotting. 
+# 'reld' causes relative difference of two values to be plotted which is 
+# important for computing packets/sec
+processdata = reld
+}}}
+
+== Running == 
+Assuming the above configuration is stored under configs/ifconfig_pkts.ini, it can be 
+run as follows:
+{{{
+./srtgplot.py --conf configs/ifconfig_pkts.ini
+}}}
+
+== Sample Output == 
+
+http://srtgplot.googlecode.com/svn/trunk/srtgplot/configs/ifconfig_sampleoutput.png
+
+== Rerun in offline mode == 
+
+To replot the captured data, add the following to the above configuration
+{{{
+ offline = <fullpath_of_captured_log_file>
+}}}
+
+----
+= Format of Configuration File =
+{{{
+The configuration consists of sections, where each section defines
+a separate plot. Plot parameters are defined using a set of keywords.
+The file format is as follows:
+ [ section-name ]
+    key1 = value1
+    key2 = value2
+    ...
+    ...
+ Section names could be anything and the list of keywords is defined below.
+ The keyword 'command' is mandatory and everything else has a default value.
+ 
+Keywords Available
+------------------
+ command (mandatory)
+   Any command that outputs a single line in the following format
+   <time> <value>
+   where
+       time  : time in the format specified using the 'format' keyword 
+               IMPORTANT: time cannot contain spaces.          
+       value : real-valued or numerical value of the plotted variable   
+           
+ title (default: Real-time plot)
+   The title of the plot.
+ 
+ miny (default: 0)
+   Minimum y-value.
+ 
+ maxy (default: * (suitable maximum))
+   Maximum y-value.
+ 
+ frequency (default: 1)
+   Frequency of updating output in seconds.
+ 
+ showplot (default: 1)
+   If showplot = 1, a gnuplot display is launched showing the realtime plot
+   If showplot = 0, the gnuplot display is disabled but the values are
+   still logged into the log file.
+ 
+ plotwindow (default: 100 seconds)
+   Specifies the width of the time window (in seconds) over which the 
+   values are shown.
+ 
+ timeformat (default: %H:%M:%S)
+   The format of time output by the command.
+   The following formatting options are available (same as gnuplot except %E)
+       %a  abbreviated name of day of the week
+       %A  full name of day of the week
+       %b or %h    abbreviated name of the month
+       %B  full name of the month
+       %d  day of the month, 01–31
+       %k  hour, 0–23 (one or two digits)
+       %H  hour, 00–23 (always two digits)
+       %l  hour, 1–12 (one or two digits)
+       %I  hour, 01–12 (always two digits)
+       %j  day of the year, 1–366
+       %m  month, 01–12
+       %M  minute, 0–60
+       %p  "am" or "pm"
+       %S  second, 0–60
+       %U  week of the year (week starts on Sunday)
+       %w  day of the week, 0–6 (Sunday = 0)
+       %W  week of the year (week starts on Monday)
+       %y  year, 0-99
+       %Y  year, 4-digit
+       %E  Unix Epoch  [Not a part of gnuplot and not yet supported by srtgplot] .
+ 
+ processdata (default: 'raw')
+    Allows different types of processing to be applied to the data before plotting.
+    Currently available options are 'raw' and 'reld'.
+    
+    raw : Plots data without any processing.
+    reld : Plots the relative difference of values.  
+ 
+ enabled (default: 1)
+    Enables or disables a section in a configuration file. 
+ 
+ offline (default: None)
+    Offline allows replotting from captured data. The argument to offline is 
+    treated as the filename to plot from.
+
+ logdir (default: /tmp)
+    Directory to log data 
+
+ logfile (default: rtplot_<sectionname>_<randomstr>)
+    File to log data
+}}}
+
