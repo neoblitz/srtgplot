@@ -8,19 +8,20 @@
 import ConfigParser
 import datetime
 
-class PlotConfig:
+# Configuration defaults
+DEFAULT_MINY = 0
+DEFAULT_MAXY = "*"
+DEFAULT_TITLE = "Real-time plot"
+DEFAULT_FREQ = 1
+DEFAULT_SHOWPLOT = 1
+DEFAULT_TIMEFMT = "%H:%M:%S"
+DEFAULT_PLOTWINDOW = 100
+DEFAULT_LOGDIR = "/tmp"
+DEFAULT_PROCESSDATA = 'raw'
+DEFAULT_OFFLINE = None
+DEFAULT_ENABLED = 1
 
-    DEFAULT_MINY = 0
-    DEFAULT_MAXY = "*"
-    DEFAULT_TITLE = "Real-time plot"
-    DEFAULT_FREQ = 1
-    DEFAULT_SHOWPLOT = 1
-    DEFAULT_TIMEFMT = "%H:%M:%S"
-    DEFAULT_PLOTWINDOW = 100
-    DEFAULT_LOGDIR = "/tmp"
-    DEFAULT_PROCESSDATA = 'raw'
-    DEFAULT_OFFLINE = None
-    DEFAULT_ENABLED = 1
+class PlotConfig:
 
     def __init__(self, filename):
         # Read the configuration file
@@ -40,19 +41,34 @@ class PlotConfig:
         for k, v in options:
             kvhash[k] = v
 
-        self.freq = float(kvhash.get("frequency", self.DEFAULT_FREQ))
-        self.miny = kvhash.get("miny", self.DEFAULT_MINY)
-        self.maxy = kvhash.get("maxy", self.DEFAULT_MAXY)
-        self.title = kvhash.get("title", self.DEFAULT_TITLE)
-        self.showplot = int(kvhash.get("showplot", self.DEFAULT_SHOWPLOT))
+        self.freq = float(kvhash.get("frequency", DEFAULT_FREQ))
+        self.miny = kvhash.get("miny", DEFAULT_MINY)
+        self.maxy = kvhash.get("maxy", DEFAULT_MAXY)
+        self.title = kvhash.get("title", DEFAULT_TITLE)
+        self.showplot = int(kvhash.get("showplot", DEFAULT_SHOWPLOT))
         self.plotwindow = datetime.timedelta(seconds=int((kvhash.get("plotwindow",
-                                                         self.DEFAULT_PLOTWINDOW))))
-        self.timefmt = kvhash.get("timeformat", self.DEFAULT_TIMEFMT)
+                                                         DEFAULT_PLOTWINDOW))))
+        self.timefmt = kvhash.get("timeformat", DEFAULT_TIMEFMT)
         self.command = kvhash.get("command", '')
-        self.logdir = logdir or self.DEFAULT_LOGDIR
-        self.processdata = kvhash.get("processdata", self.DEFAULT_PROCESSDATA)
-        self.offline = kvhash.get("offline", self.DEFAULT_OFFLINE)
-        self.enabled = int(kvhash.get("enabled", self.DEFAULT_ENABLED))
+        self.logdir = logdir or DEFAULT_LOGDIR
+        self.processdata = kvhash.get("processdata", DEFAULT_PROCESSDATA)
+        self.offline = kvhash.get("offline", DEFAULT_OFFLINE)
+        self.enabled = int(kvhash.get("enabled", DEFAULT_ENABLED))
+        self.logfile = kvhash.get("logfile", None)
+
+    def print_config(self):
+        print "Configuration:"
+        print "\t command    : %s" % (self.get_command())
+        print "\t title      : %s" % (self.get_title())
+        print "\t frequency  : %s secs" % (self.get_frequency())
+        print "\t miny-maxy  : %s-%s" % (self.get_miny(), self.get_maxy())
+        print "\t showplot   : %s" % (self.get_showplot())
+        print "\t plotwindow : %s hrs" % (self.get_plotwindow())
+        print "\t timeformat : %s" % (self.get_timefmt())
+        print "\t logdir     : %s" % (self.get_logdir())
+        print "\t logfile    : %s" % (self.get_logfile())
+        print "\t processdata: %s" % (self.get_processdata())
+        print "\t offline    : %s" % (self.get_offline())
 
     def get_frequency(self):
         return self.freq
@@ -87,8 +103,32 @@ class PlotConfig:
     def get_offline(self):
         return self.offline
 
+    def get_logfile(self):
+        return self.logfile
+
     def is_enabled(self):
         if self.enabled:
             return True
         return False
+
+
+def print_directives():
+    print "List of available directives and their defaults"
+    print "================================================"
+    print "(For details see README)\n"
+    print " command    : Command to run (mandatory option)"
+    print " timefmt    : Format of input time (default: %s)" % (DEFAULT_TIMEFMT)
+    print " frequency  : Frequency (in seconds) of running command (default: %s)" % (DEFAULT_FREQ)
+    print " title      : Title of the plot (default: %s)" % (DEFAULT_TITLE)
+    print " miny       : Minimum y value (default: %s)" % (DEFAULT_MINY)
+    print " maxy       : Minimum y value (default: %s)" % (DEFAULT_MAXY)
+    print " plotwindow : Window size (in secs) of amount of data to buffer (default: %s)" % (DEFAULT_PLOTWINDOW)
+    print " logdir     : Directory to log data (default: %s)" % (DEFAULT_LOGDIR)
+    print " logfile    : File to log data (default: %s)" % ("rtplot_<sectionname>_<randomstr>")
+    print " processdata: Data preprocessor to use (default: %s)" % (DEFAULT_PROCESSDATA)
+    print " offline    : Offline file to read data from (default: %s)" % (DEFAULT_OFFLINE)
+    print " showplot   : Launch realtime plot window (default: %s)" % (DEFAULT_SHOWPLOT)
+    print " enabled    : Enable/disable this plot (default: %s)" % (DEFAULT_ENABLED)
+
+
 

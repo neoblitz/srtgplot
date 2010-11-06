@@ -1,5 +1,5 @@
 
-*srtgplot v0.1*
+*srtgplot v0.2*
 _Copyright (C) 2010 Arun Viswanathan (arun.pict@gmail.com)_
 
 
@@ -29,13 +29,17 @@ The tool provides the following important features:
 ----
 = Usage =
 {{{
-./srtgplot.py --conf <config_file> [--logdir <logdirectory>] [--help] 
+./srtgplot.py --conf <config_file> [--logdir <dir>] [--list] [--help]
 where
-   config_file   : Configuration file in the format explained below.
-   log_directory : Directory where captured data is stored. Files under
-                   this directory will be of the format                                      
-                   rtplot_<section_name_from_conf_file>_<randomstring>  
-                   Default directory is /tmp.
+	--conf <config_file> : Configuration file. See README for format.
+	[--logdir <dir>] : Directory where captured data is stored unless
+			overridden using the 'logdir' directive in the config.
+			By default, log files created will be of the format
+			rtplot_<section_name_from_conf_file>_<randomstring>)
+			unless overridden using the 'logfile' directive
+
+	[--list]        : Lists all available configuration directives.
+	[--help]        : Print this help.
 }}}
 
 ----
@@ -154,7 +158,7 @@ Keywords Available
        %W  week of the year (week starts on Monday)
        %y  year, 0-99
        %Y  year, 4-digit
-       %E  Unix Epoch  [Not a part of gnuplot] .
+       %E  Unix Epoch  [Not a part of gnuplot and not yet supported by srtgplot] .
  
  processdata (default: 'raw')
     Allows different types of processing to be applied to the data before plotting.
@@ -169,5 +173,11 @@ Keywords Available
  offline (default: None)
     Offline allows replotting from captured data. The argument to offline is 
     treated as the filename to plot from.
+
+ logdir (default: /tmp)
+    Directory to log data 
+
+ logfile (default: rtplot_<sectionname>_<randomstr>)
+    File to log data
 }}}
 
