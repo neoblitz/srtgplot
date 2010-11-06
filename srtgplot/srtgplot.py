@@ -17,9 +17,8 @@ import getopt
 from threading import Thread
 from plotthread import Plot
 from plotconfig import PlotConfig, print_directives
-from utils import cprint
 
-VERSION = "0.2"
+VERSION = "0.2b"
 DEFAULT_LOGDIR = "/tmp"
 threadlist = []
 
@@ -86,10 +85,10 @@ def main():
         sys.exit()
 
     copyright()
+    print "\nIMPORTANT: Use Ctrl-C to exit...."
     print "\nGlobal Configs:"
     print "\tConfiguration File : %s" % (conf)
     print "\tLog Directory      : %s" % (logdir)
-    print "IMPORTANT: Use Ctrl-C to exit....\n"
 
     if(not os.path.exists(conf)):
         print  "Error: Filename '", conf, "' does not exist ! Aborting !!"

@@ -77,7 +77,7 @@ set title \"%s\" font "Sans Serif,14"; """
             # Open the specified logfile in write mode
             self.fnameout = self.config.get_logfile()
             try:
-                self.handle = os.open(self.fnameout, os.O_RDWR)
+                self.handle = os.open(self.fnameout, os.O_CREAT | os.O_WRONLY)
             except IOError:
                 raise Exception("Could not open logfile %s!" % (self.fnameout))
 
@@ -95,7 +95,7 @@ set title \"%s\" font "Sans Serif,14"; """
         else:
            print "\nRealtime plotting for '%s' and output to logfile '%s'" % \
             (self.secname, self.fnameout)
-        print self.config.print_config()
+        self.config.print_config()
         self.start()
 
 
@@ -114,17 +114,24 @@ set title \"%s\" font "Sans Serif,14"; """
             if(timediff >= self.config.get_plotwindow()):
                 self.plotbuffer.popleft()
 
+    def process_reld(self, dp):
+        '''
+            Diffs the current value with previous value
+        '''
+        (timestr, currval) = dp.split()
+        currval = float(currval)
+        if(len(self.plotbuffer) == 0):
+            self.prevvalue = currval
+        diff = currval - self.prevvalue
+        newdp = timestr + " " + str(diff) + "\n"
+        self.plotbuffer.append(newdp)
+        self.prevvalue = currval
+
+
     def process_data(self, dp):
         procopt = self.config.get_processdata()
         if(procopt == 'reld'):
-            (timestr, currval) = dp.split()
-            currval = float(currval)
-            if(len(self.plotbuffer) == 0):
-                self.prevvalue = currval
-            diff = currval - self.prevvalue
-            newdp = timestr + " " + str(diff) + "\n"
-            self.plotbuffer.append(newdp)
-            self.prevvalue = currval
+            self.process_reld(dp)
         else:
             self.plotbuffer.append(str(dp) + "\n")
 
@@ -157,8 +164,7 @@ set title \"%s\" font "Sans Serif,14"; """
 
     def log_data(self, data):
         if(not self.config.get_offline()):
-            for d in data:
-                os.write(self.handle, str(d) + "\n")
+            os.write(self.handle, str(data) + "\n")
 
 
     def run(self):
@@ -186,17 +192,25 @@ set title \"%s\" font "Sans Serif,14"; """
                     self.adjust_plotwindow(data)
                     self.process_data(data)
                     # Redraw all the points in the data buffer
-                    if(len(self.plotbuffer) > 0):
-                        self.gp.simple_plot(self.plotbuffer,
-                                           1, # x column  
-                                           2, # y column
-                                           "linespoints ls 1") # Style
+                    self.gp.simple_plot(self.plotbuffer,
+                                        1, # x column  
+                                        2, # y column
+                                        "linespoints ls 1") # Style
 
-                # Sleep for the remaining time
+                # Sleep for the remaining time in realtime mode
                 if(not self.offline_file):
                     loopruntime = time.clock() - loopstart
                     remaining_time = freq - loopruntime
                     if(remaining_time > 0.0):
                         time.sleep(remaining_time)
         print "No more data for '%s'! " % (self.secname)
+
+        # Wait for user confirmation before exiting the thread
+        # in offline mode as this would close the gnuplot window
+        if(self.offline_file):
+            try:
+                raw_input("Hit ENTER to close the gnuplot window for '%s'!" % \
+                           (self.secname))
+            except:
+                pass
         os.close(self.handle)

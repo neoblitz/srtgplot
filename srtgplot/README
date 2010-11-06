@@ -2,6 +2,10 @@
 *srtgplot v0.2*
 _Copyright (C) 2010 Arun Viswanathan (arun.pict@gmail.com)_
 
+<wiki:comment> 
+This README is a cutpaste from the google wiki page and is converted to README.html using the wiki_converter script.
+./wiki_convertor.rb srtgplot/README rtgplot/
+</wiki:comment>
 
 = What is srtgplot? =
 srtgplot was written to automate the commonly encountered need of plotting data captured by executing unix commands in real-time (eg: _TX packets_ from *ifconfig* or monitoring the _temperature_ of a hard-drive using output from *smartctl*).The real-time data can be generated using any command, program or script. Data is expected to be either numeric or continuous and the graph plotted is a moving timeline. The specified command is run at the specified frequency, the generated data is collected and plotted using gnuplot in realtime. Also, earlier captured data can be easily plotted in an offline fashion using 
@@ -37,7 +41,6 @@ where
 			By default, log files created will be of the format
 			rtplot_<section_name_from_conf_file>_<randomstring>)
 			unless overridden using the 'logfile' directive
-
 	[--list]        : Lists all available configuration directives.
 	[--help]        : Print this help.
 }}}
