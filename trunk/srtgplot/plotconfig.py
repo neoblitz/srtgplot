@@ -46,8 +46,8 @@ class PlotConfig:
         self.maxy = kvhash.get("maxy", DEFAULT_MAXY)
         self.title = kvhash.get("title", DEFAULT_TITLE)
         self.showplot = int(kvhash.get("showplot", DEFAULT_SHOWPLOT))
-        self.plotwindow = datetime.timedelta(seconds=int((kvhash.get("plotwindow",
-                                                         DEFAULT_PLOTWINDOW))))
+        self.plotwindow_secs = kvhash.get("plotwindow", DEFAULT_PLOTWINDOW)
+        self.plotwindow = datetime.timedelta(seconds=int(self.plotwindow_secs))
         self.timefmt = kvhash.get("timeformat", DEFAULT_TIMEFMT)
         self.command = kvhash.get("command", '')
         self.logdir = logdir or DEFAULT_LOGDIR
@@ -63,12 +63,14 @@ class PlotConfig:
         print "\t frequency  : %s secs" % (self.get_frequency())
         print "\t miny-maxy  : %s-%s" % (self.get_miny(), self.get_maxy())
         print "\t showplot   : %s" % (self.get_showplot())
-        print "\t plotwindow : %s hrs" % (self.get_plotwindow())
+        print "\t plotwindow : %s secs (%s hrs)" % (self.plotwindow_secs,
+                                                    self.get_plotwindow())
         print "\t timeformat : %s" % (self.get_timefmt())
         print "\t logdir     : %s" % (self.get_logdir())
         print "\t logfile    : %s" % (self.get_logfile())
         print "\t processdata: %s" % (self.get_processdata())
         print "\t offline    : %s" % (self.get_offline())
+        print "------------------------------------"
 
     def get_frequency(self):
         return self.freq

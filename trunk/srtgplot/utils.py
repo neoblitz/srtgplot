@@ -39,5 +39,3 @@ def execute_command(cmd):
         return (status, output)
     return (0, output.split("\n"))
 
-def cprint(lhs, rhs):
-    print "%20s : %-50s" % (lhs, rhs)

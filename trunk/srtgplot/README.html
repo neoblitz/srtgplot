@@ -5,7 +5,7 @@
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
   </head>
   <body>
-    <p> <strong>srtgplot v0.1</strong> <i>Copyright (C) 2010 Arun Viswanathan (arun.pict@gmail.com)</i></p><h1>What is srtgplot?</h1>
+    <p> <strong>srtgplot v0.2</strong> <i>Copyright (C) 2010 Arun Viswanathan (arun.pict@gmail.com)</i></p><p>&lt;wiki:comment&gt;  This README is a cutpaste from the google wiki page and is converted to README.html using the wiki_converter script. ./wiki_convertor.rb srtgplot/README rtgplot/ &lt;/wiki:comment&gt;</p><h1>What is srtgplot?</h1>
 srtgplot was written to automate the commonly encountered need of plotting data captured by executing unix commands in real-time (eg: <i>TX packets</i> from <strong>ifconfig</strong> or monitoring the <i>temperature</i> of a hard-drive using output from <strong>smartctl</strong>).The real-time data can be generated using any command, program or script. Data is expected to be either numeric or continuous and the graph plotted is a moving timeline. The specified command is run at the specified frequency, the generated data is collected and plotted using gnuplot in realtime. Also, earlier captured data can be easily plotted in an offline fashion using 
 the 'offline' keyword along with the filename of captured data in the configuration file.<p>Various configuration options are available and are specified using a simple configuration file in the format explained later. Example configurations are available under the configs/ directory. </p><p>The tool provides the following important features: <ul><li>Allows plotting data in realtime as well as plotting captured data using the 'offline' keyword.</li><li>Allows specifying various time formats using the specifiers supported by gnuplot.</li><li>The collected data can be processed using processors before plotting. Currently, supported processors are <i>reld</i> (for plotting relative differences) and <i>raw</i> for plotting the raw data.</li></ul>   <strong>Note</strong> For commands that need superuser privileges, it is recommended to run the whole tool using <strong>sudo</strong> instead of specifying sudo with the commands. <hr/> <h1>Dependencies</h1></p><ul><li><a href="http://www.gnuplot.info/">gnuplot</a></li><li>python v2.6 (may work with earlier versions but is not tested)</li><li><a href="http://labix.org/python-dateutil">python-dateutil</a></li></ul>
  
@@ -13,13 +13,16 @@ the 'offline' keyword along with the filename of captured data in the configurat
 <pre>sudo apt-get install python-dateutil</pre>
 <hr/>
 <h1>Usage</h1>
-<pre>./srtgplot.py --conf &lt;config_file&gt; [--logdir &lt;logdirectory&gt;] [--help] 
+<pre>./srtgplot.py --conf &lt;config_file&gt; [--logdir &lt;dir&gt;] [--list] [--help]
 where
-   config_file   : Configuration file in the format explained below.
-   log_directory : Directory where captured data is stored. Files under
-                   this directory will be of the format                                      
-                   rtplot_&lt;section_name_from_conf_file&gt;_&lt;randomstring&gt;  
-                   Default directory is /tmp.</pre><hr/>
+	--conf &lt;config_file&gt; : Configuration file. See README for format.
+	[--logdir &lt;dir&gt;] : Directory where captured data is stored unless
+			overridden using the 'logdir' directive in the config.
+			By default, log files created will be of the format
+			rtplot_&lt;section_name_from_conf_file&gt;_&lt;randomstring&gt;)
+			unless overridden using the 'logfile' directive
+	[--list]        : Lists all available configuration directives.
+	[--help]        : Print this help.</pre><hr/>
 <h1>Example</h1> 
 <h2>Writing the configuration</h2>
 The following is a simple configuration for plotting packets/sec on an interface. 
@@ -114,7 +117,7 @@ Keywords Available
        %W  week of the year (week starts on Monday)
        %y  year, 0-99
        %Y  year, 4-digit
-       %E  Unix Epoch  [Not a part of gnuplot] .
+       %E  Unix Epoch  [Not a part of gnuplot and not yet supported by srtgplot] .
  
  processdata (default: 'raw')
     Allows different types of processing to be applied to the data before plotting.
@@ -128,6 +131,6 @@ Keywords Available
  
  offline (default: None)
     Offline allows replotting from captured data. The argument to offline is 
-    treated as the filename to plot from.</pre>
+    treated as the filename to plot from.<p> logdir (default: /tmp)     Directory to log data </p><p> logfile (default: rtplot_&lt;sectionname&gt;_&lt;randomstr&gt;)     File to log data</pre></p>
   </body>
 </html>
