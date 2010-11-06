@@ -16,9 +16,10 @@ import signal
 import getopt
 from threading import Thread
 from plotthread import Plot
-from plotconfig import PlotConfig
+from plotconfig import PlotConfig, print_directives
+from utils import cprint
 
-VERSION = "0.1"
+VERSION = "0.2"
 DEFAULT_LOGDIR = "/tmp"
 threadlist = []
 
@@ -34,21 +35,23 @@ def handler(signum, frame):
 
 def copyright():
     print "srtgplot v%s" % (VERSION)
-    print "Copyright (C) 2010 Arun Viswanathan"
+    print "Copyright (C) 2010 Arun Viswanathan (arunv@arunviswanathan.com)"
 
 def usage():
     copyright()
-    print "\nUsage: ./%s --conf <config_file> [--help] [--logdir <logdirectory>]"\
-                 % sys.argv[0]
-    print """
-        where
-        config_file   : Configuration file in the format explained below.
-        log_directory : Directory where captured data is stored. Files under
-                        this directory will be of the format 
-                        rtplot_<section_name_from_conf_file>_<randomstring>      
-    """
-    print "Use Ctrl-C to exit...."
+    print "\nUsage: %s --conf <config_file> [--logdir <dir>] [--list] [--help]"\
+             % sys.argv[0]
+    print "where"
+    print "\t--conf <config_file> : Configuration file. See README for format."
 
+    print "\t[--logdir <dir>] : Directory where captured data is stored unless"
+    print "\t\t\toverridden using the 'logdir' directive in the config."
+    print "\t\t\tBy default, log files created will be of the format"
+    print "\t\t\trtplot_<section_name_from_conf_file>_<randomstring>)"
+    print "\t\t\tunless overridden using the 'logfile' directive\n"
+
+    print "\t[--list]        : Lists all available configuration directives with defaults."
+    print "\t[--help]        : Print this help."
 
 def main():
     fn = ''
@@ -56,13 +59,14 @@ def main():
     try:
         opts, args = getopt.getopt(sys.argv[1:],
                                    '',
-                                  ['conf=', 'logdir=', 'help'])
+                                  ['conf=', 'logdir=', 'help', 'list'])
     except getopt.error, msg:
         usage()
         sys.exit(2)
 
     conf = None
     help = None
+    listdirec = None
     logdir = DEFAULT_LOGDIR
     # Process options
     for option, arg in opts:
@@ -73,15 +77,19 @@ def main():
           sys.exit(0)
         elif option == '--logdir':
           logdir = arg
+        elif option == '--list':
+            print_directives()
+            sys.exit(0)
 
     if not conf:
         usage()
         sys.exit()
 
     copyright()
-    print "\nConfiguration File : %s" % (conf)
-    print "Log Directory      : %s" % (logdir)
-    print "\nUse Ctrl-C to exit...."
+    print "\nGlobal Configs:"
+    print "\tConfiguration File : %s" % (conf)
+    print "\tLog Directory      : %s" % (logdir)
+    print "IMPORTANT: Use Ctrl-C to exit....\n"
 
     if(not os.path.exists(conf)):
         print  "Error: Filename '", conf, "' does not exist ! Aborting !!"

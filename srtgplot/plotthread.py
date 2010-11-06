@@ -28,14 +28,12 @@ set xdata time;
 set timefmt \"%s\";
 set tics nomirror;
 set yrange [%s:%s];
-set autoscale x;
+set style line 1 linetype 1 linewidth 1 pointtype 2;
 set title \"%s\" font "Sans Serif,14"; """
 
     def __init__(self, config, secname, logdir):
         Thread.__init__(self)
         self.secname = secname
-        self.windowstart = 0
-        self.windowend = 0
         self.config = config
         self.time_to_leave = False
         self.off_filehandle = None
@@ -51,13 +49,39 @@ set title \"%s\" font "Sans Serif,14"; """
         # data is a dynamic buffer that holds data points over the specified 
         # plotwindow. A deque() is favoured over a [] because deques have O(1)
         # performance for popleft() and append() operations over O(n) of lists. 
-        self.data = deque()
+        self.plotbuffer = deque()
+
+        # Windowstart and windowend control the plotwindow . 
+        self.windowstart = 0
+        self.windowend = 0
+
+        # Get the offline filename if any
+        self.offline_file = self.config.get_offline()
+        self.offline_filehandle = None
+        if(self.offline_file):
+            try:
+                self.offline_filehandle = open(self.offline_file, "r")
+                #xreadline reads big files efficiently in memory and returns
+                # a file object to iterate over.
+                self.file_in_mem = self.offline_filehandle.xreadlines()
+            except IOError:
+                raise Exception("Could not open logfile %s !" % (filename))
+
 
         # Create a temporary file for logging the command output
-        (self.handle, self.fnameout) = \
-         tempfile.mkstemp(prefix="rtplot_" + self.secname + "_",
+        if(self.config.get_logfile() is None):
+            (self.handle, self.fnameout) = \
+                tempfile.mkstemp(prefix="rtplot_" + self.secname + "_",
                           dir=self.logdir);
+        else:
+            # Open the specified logfile in write mode
+            self.fnameout = self.config.get_logfile()
+            try:
+                self.handle = os.open(self.fnameout, os.O_RDWR)
+            except IOError:
+                raise Exception("Could not open logfile %s!" % (self.fnameout))
 
+        # Initialize gnuplot
         if(self.config.get_showplot()):
             self.gp = Gnuplot()
             self.gp.write(self.GP_OPTIONS % (self.config.get_timefmt(),
@@ -65,12 +89,13 @@ set title \"%s\" font "Sans Serif,14"; """
                            self.config.get_maxy(),
                            self.config.get_title()));
 
-        if(self.config.get_offline()):
-           print "Offline plotting initialized for '%s' (logfile: '%s', frequency: %d)" % \
-            (self.secname, self.config.get_offline(), self.config.get_frequency())
+        if(self.offline_file is not None):
+           print "\nOffline plotting for '%s' using logfile: '%s'" % \
+            (self.secname, self.config.get_offline())
         else:
-            print "Realtime plotting initialized for '%s' (logfile: '%s', frequency: %d)" % \
-            (self.secname, self.fnameout, self.config.get_frequency())
+           print "\nRealtime plotting for '%s' and output to logfile '%s'" % \
+            (self.secname, self.fnameout)
+        print self.config.print_config()
         self.start()
 
 
@@ -84,51 +109,56 @@ set title \"%s\" font "Sans Serif,14"; """
         return(self.windowend - self.windowstart)
 
     def adjust_plotwindow(self, dp):
-        if(not self.config.get_offline()):
+        if(self.offline_file is None):
             timediff = self.get_curr_timewindow(dp)
             if(timediff >= self.config.get_plotwindow()):
-                self.data.popleft()
+                self.plotbuffer.popleft()
 
     def process_data(self, dp):
         procopt = self.config.get_processdata()
         if(procopt == 'reld'):
             (timestr, currval) = dp.split()
             currval = float(currval)
-            if(len(self.data) == 0):
+            if(len(self.plotbuffer) == 0):
                 self.prevvalue = currval
             diff = currval - self.prevvalue
             newdp = timestr + " " + str(diff) + "\n"
-            self.data.append(newdp)
+            self.plotbuffer.append(newdp)
             self.prevvalue = currval
         else:
-            self.data.append(dp)
+            self.plotbuffer.append(str(dp) + "\n")
 
     def set_ttl(self):
         self.time_to_leave = True
 
-    def get_data(self):
+    def data_generator(self):
         '''
-            Return the data to be plotted 
+            This is a generator function (due to use of the yield keyword)
+            that will return a line of data each time it is called.
         '''
-        filename = self.config.get_offline()
-        if(filename):
-            if(self.off_filehandle == None):
-                self.off_filehandle = open(filename, "r")
-            return self.off_filehandle.xreadlines()
+        if(self.offline_file):
+            for line in self.file_in_mem:
+                yield line
         else:
             # Execute the command
-            cmd = self.config.get_command()
-            (status, data) = utils.execute_command(cmd)
-            if(status):
-                raise Exception("Error while executing %s\n Error output %s" % \
+            # data returned is a list of strings in the format 
+            # <time value>
+            # The while loop makes sure that the generator 
+            # reruns the command repeatedly
+            while True:
+                cmd = self.config.get_command()
+                (status, data) = utils.execute_command(cmd)
+                if(status):
+                    raise Exception("Error while executing %s\n Error output %s" % \
                                  (cmd, data))
-            else:
-                return data, len(data)
+                else:
+                    for line in data:
+                        yield line
 
     def log_data(self, data):
         if(not self.config.get_offline()):
             for d in data:
-                os.write(self.handle, d + "\n")
+                os.write(self.handle, str(d) + "\n")
 
 
     def run(self):
@@ -138,32 +168,35 @@ set title \"%s\" font "Sans Serif,14"; """
             return
         freq = self.config.get_frequency()
 
+        # Create the data_generator. Note that this does not 
+        # actually run the function but just creates the generator object
+        datagen = self.data_generator()
 
         # Collect data according to frequency and plot accordingly
-        while True:
+        for data in datagen:
             loopstart = time.clock()
             if(self.time_to_leave):
                 break
             else:
-                # Get data
-                data = self.get_data()
-                if(not data):
-                    break
-
                 # Log output to the file
                 self.log_data(data)
 
                 # Update display if necessary
                 if(self.config.get_showplot()):
+                    self.adjust_plotwindow(data)
+                    self.process_data(data)
                     # Redraw all the points in the data buffer
-                    for dp in data:
-                        self.adjust_plotwindow(dp)
-                        self.process_data(dp)
-                        self.gp.simple_plot(self.data, 1, 2, "lines")
+                    if(len(self.plotbuffer) > 0):
+                        self.gp.simple_plot(self.plotbuffer,
+                                           1, # x column  
+                                           2, # y column
+                                           "linespoints ls 1") # Style
 
                 # Sleep for the remaining time
-                if(not self.config.get_offline()):
+                if(not self.offline_file):
                     loopruntime = time.clock() - loopstart
-                    if(freq - loopruntime > 0):
-                        time.sleep(freq - loopruntime)
+                    remaining_time = freq - loopruntime
+                    if(remaining_time > 0.0):
+                        time.sleep(remaining_time)
+        print "No more data for '%s'! " % (self.secname)
         os.close(self.handle)

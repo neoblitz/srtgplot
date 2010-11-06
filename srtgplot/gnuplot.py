@@ -21,9 +21,15 @@ class Gnuplot:
         if path is None:
             raise Exception("Cannot find gnuplot on your system!")
 
-        # Create a pipe to gnuplot
+        # Create a input pipe to gnuplot for sending gnuplot commands.
+        # Create a stderr pipe to capture warnings/errors output by gnuplot. 
+        # Currently the errors are not processed but may need to be if 
+        # additional gnuplot functionality is introduced.
+        # shell = true makes sure that the commands are executed as if they 
+        # were being executed using a shell.
         self.gp = subprocess.Popen([self.GNUPLOT],
                                    stdin=subprocess.PIPE,
+                                   stderr=subprocess.PIPE,
                                    shell=True);
 
     def write(self, data):
@@ -33,6 +39,10 @@ class Gnuplot:
         self.write(options)
 
     def simple_plot(self, datalist, xcolno, ycolno, style):
+        '''
+            Plots the xcolno and ycolno in the datalist using 
+            specified style 
+        '''
         plotstr = """plot "-" using %d:%d notitle w %s\n""" % \
                          (xcolno, ycolno, style)
 
