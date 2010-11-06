@@ -1,5 +1,5 @@
 
-*srtgplot v0.2*
+*srtgplot v0.1*
 _Copyright (C) 2010 Arun Viswanathan (arun.pict@gmail.com)_
 
 <wiki:comment> 
@@ -61,7 +61,7 @@ timeformat = %H:%M:%S
 # Frequency with which to execute the command
 frequency = 1
 # Title for the produced graphs 
-title = TX Packets/sec on interface eth1
+title = RX Packets/sec on interface eth1
 # Show the plot output. If this is zero then data is only logged to the logfile
 showplot = 1
 # Minimum and maximum values for the Y-axis. '*' means automatically adjust the

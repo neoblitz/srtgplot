@@ -5,7 +5,7 @@
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
   </head>
   <body>
-    <p> <strong>srtgplot v0.2</strong> <i>Copyright (C) 2010 Arun Viswanathan (arun.pict@gmail.com)</i></p><p>&lt;wiki:comment&gt;  This README is a cutpaste from the google wiki page and is converted to README.html using the wiki_converter script. ./wiki_convertor.rb srtgplot/README rtgplot/ &lt;/wiki:comment&gt;</p><h1>What is srtgplot?</h1>
+    <p> <strong>srtgplot v0.1</strong> <i>Copyright (C) 2010 Arun Viswanathan (arun.pict@gmail.com)</i></p><p>&lt;wiki:comment&gt;  This README is a cutpaste from the google wiki page and is converted to README.html using the wiki_converter script. ./wiki_convertor.rb srtgplot/README rtgplot/ &lt;/wiki:comment&gt;</p><h1>What is srtgplot?</h1>
 srtgplot was written to automate the commonly encountered need of plotting data captured by executing unix commands in real-time (eg: <i>TX packets</i> from <strong>ifconfig</strong> or monitoring the <i>temperature</i> of a hard-drive using output from <strong>smartctl</strong>).The real-time data can be generated using any command, program or script. Data is expected to be either numeric or continuous and the graph plotted is a moving timeline. The specified command is run at the specified frequency, the generated data is collected and plotted using gnuplot in realtime. Also, earlier captured data can be easily plotted in an offline fashion using 
 the 'offline' keyword along with the filename of captured data in the configuration file.<p>Various configuration options are available and are specified using a simple configuration file in the format explained later. Example configurations are available under the configs/ directory. </p><p>The tool provides the following important features: <ul><li>Allows plotting data in realtime as well as plotting captured data using the 'offline' keyword.</li><li>Allows specifying various time formats using the specifiers supported by gnuplot.</li><li>The collected data can be processed using processors before plotting. Currently, supported processors are <i>reld</i> (for plotting relative differences) and <i>raw</i> for plotting the raw data.</li></ul>   <strong>Note</strong> For commands that need superuser privileges, it is recommended to run the whole tool using <strong>sudo</strong> instead of specifying sudo with the commands. <hr/> <h1>Dependencies</h1></p><ul><li><a href="http://www.gnuplot.info/">gnuplot</a></li><li>python v2.6 (may work with earlier versions but is not tested)</li><li><a href="http://labix.org/python-dateutil">python-dateutil</a></li></ul>
  
@@ -36,7 +36,7 @@ timeformat = %H:%M:%S
 # Frequency with which to execute the command
 frequency = 1
 # Title for the produced graphs 
-title = TX Packets/sec on interface eth1
+title = RX Packets/sec on interface eth1
 # Show the plot output. If this is zero then data is only logged to the logfile
 showplot = 1
 # Minimum and maximum values for the Y-axis. '*' means automatically adjust the
