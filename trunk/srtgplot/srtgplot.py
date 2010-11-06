@@ -18,7 +18,7 @@ from threading import Thread
 from plotthread import Plot
 from plotconfig import PlotConfig, print_directives
 
-VERSION = "0.2b"
+VERSION = "0.1"
 DEFAULT_LOGDIR = "/tmp"
 threadlist = []
 

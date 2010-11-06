@@ -120,7 +120,7 @@ def print_directives():
     print "(For details see README)\n"
     print " command    : Command to run (mandatory option)"
     print " timefmt    : Format of input time (default: %s)" % (DEFAULT_TIMEFMT)
-    print " frequency  : Frequency (in seconds) of running command (default: %s)" % (DEFAULT_FREQ)
+    print " frequency  : Frequency (in seconds) for running command (default: %s)" % (DEFAULT_FREQ)
     print " title      : Title of the plot (default: %s)" % (DEFAULT_TITLE)
     print " miny       : Minimum y value (default: %s)" % (DEFAULT_MINY)
     print " maxy       : Minimum y value (default: %s)" % (DEFAULT_MAXY)
