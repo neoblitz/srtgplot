@@ -18,10 +18,19 @@ import utils
 
 import dateutil.parser
 from threading import Thread
+import threading
 from collections import deque
 from gnuplot import Gnuplot
+from plotconfig import PlotConfig
 
 class Plot(Thread):
+    """
+        Plotter thread for every section specified in the configuration file.
+        Specified command is run with the frequency specified, command output 
+        is logged to a file under the specified log directory (default: /tmp) 
+        and a gnuplot window plots real-time values collected.    
+    """
+    
     # Gnuplot options
     GP_OPTIONS = """ 
 set xdata time;
@@ -31,22 +40,24 @@ set yrange [%s:%s];
 set style line 1 linetype 1 linewidth 1 pointtype 2;
 set title \"%s\" font "Sans Serif,14"; """
 
-    def __init__(self, config, secname, logdir):
+    def __init__(self, conffile, secname, logdir):
         Thread.__init__(self)
         self.secname = secname
-        self.config = config
         self.time_to_leave = False
         self.off_filehandle = None
         self.logdir = logdir
+        
+        # Read and initialize from the config file
+        self.config = PlotConfig(conffile)
 
         # Initialize attributes for the given secname
         self.config.init_attributes(secname)
 
         if not self.config.is_enabled():
-            print "Skipping plot '%s'" % (secname)
+            print "Skipping plot for section '%s'" % (secname)
             return
 
-        # data is a dynamic buffer that holds data points over the specified 
+        # plotbuffer is a dynamic buffer that holds data points over the specified 
         # plotwindow. A deque() is favoured over a [] because deques have O(1)
         # performance for popleft() and append() operations over O(n) of lists. 
         self.plotbuffer = deque()
@@ -177,32 +188,38 @@ set title \"%s\" font "Sans Serif,14"; """
         # Create the data_generator. Note that this does not 
         # actually run the function but just creates the generator object
         datagen = self.data_generator()
-
-        # Collect data according to frequency and plot accordingly
-        for data in datagen:
-            loopstart = time.clock()
-            if(self.time_to_leave):
-                break
-            else:
-                # Log output to the file
-                self.log_data(data)
-
-                # Update display if necessary
-                if(self.config.get_showplot()):
-                    self.adjust_plotwindow(data)
-                    self.process_data(data)
-                    # Redraw all the points in the data buffer
-                    self.gp.simple_plot(self.plotbuffer,
-                                        1, # x column  
-                                        2, # y column
-                                        "linespoints ls 1") # Style
-
-                # Sleep for the remaining time in realtime mode
-                if(not self.offline_file):
-                    loopruntime = time.clock() - loopstart
-                    remaining_time = freq - loopruntime
-                    if(remaining_time > 0.0):
-                        time.sleep(remaining_time)
+        
+        try:
+            # Collect data according to frequency and plot accordingly
+            for data in datagen:
+                loopstart = time.clock()
+                if(self.time_to_leave):
+                    break
+                else:
+                    # Log output to the file
+                    self.log_data(data)
+                    print threading.current_thread() , data
+    
+                    # Update display if necessary
+                    if(self.config.get_showplot()):
+                        self.adjust_plotwindow(data)
+                        self.process_data(data)
+                        # Redraw all the points in the data buffer
+                        self.gp.simple_plot(self.plotbuffer,
+                                            1, # x column  
+                                            2, # y column
+                                            "linespoints ls 1") # Style
+    
+                    # Sleep for the remaining time in realtime mode
+                    if(not self.offline_file):
+                        loopruntime = time.clock() - loopstart
+                        remaining_time = freq - loopruntime
+                        if(remaining_time > 0.0):
+                            time.sleep(remaining_time)
+        except Exception as ex:
+            print "ERROR: %s" %(ex)
+            return
+        
         print "No more data for '%s'! " % (self.secname)
 
         # Wait for user confirmation before exiting the thread

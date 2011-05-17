@@ -35,7 +35,13 @@ def execute_command(cmd):
         execution
     '''
     (status, output) = commands.getstatusoutput("""%s""" % (cmd))
+    if((output.find("error") >= 0) or 
+       (output.find("ERROR") >= 0) or
+       (output.find("Error") >= 0)):
+        status = 1   
+    
     if (status > 0):
         return (status, output)
     return (0, output.split("\n"))
 
+    

@@ -18,7 +18,7 @@ from threading import Thread
 from plotthread import Plot
 from plotconfig import PlotConfig, print_directives
 
-VERSION = "0.1"
+VERSION = "0.2"
 DEFAULT_LOGDIR = "/tmp"
 threadlist = []
 
@@ -33,8 +33,10 @@ def handler(signum, frame):
             t.set_ttl()
 
 def copyright():
-    print "srtgplot v%s" % (VERSION)
-    print "Copyright (C) 2010 Arun Viswanathan (arunv@arunviswanathan.com)"
+    print "################################################################"
+    print "# srtgplot v%s" % (VERSION)
+    print "# Copyright (C) 2010 Arun Viswanathan (arunv@arunviswanathan.com)"
+    print "################################################################"
 
 def usage():
     copyright()
@@ -101,13 +103,13 @@ def main():
 
     # Read and initialize from the config file
     config = PlotConfig(conf)
-
     # Spawn a thread for each section in the INI file
     sections = config.get_sections()
+    
     for secname in sections:
-        tp = Plot(config, secname, logdir)
+        tp = Plot(conf, secname, logdir)
         threadlist.append(tp)
-
+    
     for tp in threadlist:
         # Join with timeout allows threads to be interrupted
         # Refer to this discussion 
