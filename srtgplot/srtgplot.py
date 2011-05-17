@@ -18,7 +18,7 @@ from threading import Thread
 from plotthread import Plot
 from plotconfig import PlotConfig, print_directives
 
-VERSION = "0.2"
+VERSION = "0.3"
 DEFAULT_LOGDIR = "/tmp"
 threadlist = []
 
@@ -33,10 +33,10 @@ def handler(signum, frame):
             t.set_ttl()
 
 def copyright():
-    print "################################################################"
+    print "#####################################################################"
     print "# srtgplot v%s" % (VERSION)
-    print "# Copyright (C) 2010 Arun Viswanathan (arunv@arunviswanathan.com)"
-    print "################################################################"
+    print "# Copyright (C) 2010-2011 Arun Viswanathan (arunv@arunviswanathan.com)"
+    print "#####################################################################"
 
 def usage():
     copyright()
