@@ -24,6 +24,7 @@ DEFAULT_ENABLED = 1
 class PlotConfig:
 
     def __init__(self, filename):
+        
         # Read the configuration file
         self.config = ConfigParser.RawConfigParser()
         # The following option is important to prevent configparser 
